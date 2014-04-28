@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+  <head>
+	<?php echo $this->headTitle() ?>
+	
+	<?php if($this->description){ ?>
+		<meta name="description" content="<?php echo $this->description ?>" />
+	<?php } ?>
+	
+    <?php echo $this->headLink() ?>
+    <link rel="shortcut icon" href="<?php echo HOST?>favicon.ico">
+    
+	<?php echo $this->headMeta() ?>
+    <meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <?php echo $this->headScript() ?>
+    
+  </head>
+  
+  <body style="height:100%">
+		<div id="header">
+			<a href="<?php echo $this->url(array(),'logout',true)?>">Logout</a>
+		</div>
+		<?php echo $this->layout()->content; ?>
+	
+  </body>
+</html>

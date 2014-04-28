@@ -1,0 +1,90 @@
+<?php
+$today = new Frogg_Time_Time(time());
+if($this->period){
+	if(preg_match("/^(\d\d)-(\d\d\d\d)$/", $this->period)){
+		$period = explode('-', $this->period);
+		$chosen_date			 = new Frogg_Time_Time($period[1].'-'.$period[0].'-01');
+		$month 					 = $chosen_date->getMonth();
+		$days_passed_this_month  = date('j',mktime(0,0,0,$month,1,$chosen_date->getYear()));
+		$days_in_month  		 = date('t',mktime(0,0,0,$month,1,$chosen_date->getYear()));
+		$ahead = new Frogg_Time_Time($chosen_date->getUnixTstamp()+(($days_in_month-$days_passed_this_month+1)*Frogg_Time_Time::DAY)+Frogg_Time_Time::HOUR);
+		$behind= new Frogg_Time_Time($chosen_date->getUnixTstamp()-(Frogg_Time_Time::DAY));
+		
+		$highlight_today = ($today->getMonth()==$chosen_date->getMonth() && $today->getYear()==$chosen_date->getYear());
+	}
+} else {
+	$chosen_date 			 = new Frogg_Time_Time(time());
+	$month 					 = $chosen_date->getMonth();
+	$days_passed_this_month  = date('j');
+	$days_in_month  		 = date('t',mktime(0,0,0,$month,1,$chosen_date->getYear()));
+	$ahead = new Frogg_Time_Time(time()+(($days_in_month-$days_passed_this_month+1)*Frogg_Time_Time::DAY));
+	$behind= new Frogg_Time_Time(time()-(($days_in_month+1)*Frogg_Time_Time::DAY));
+	$highlight_today		 = true;
+}
+
+?>
+<div id="previous-month"><a href="<?php echo $this->url(array('period'=>$behind->getMonth().'-'.$behind->getYear()),'myCalendar',true)?>">« <?php echo $behind->format('F, Y')?></a></div>
+<div id="next-month"><a href="<?php echo $this->url(array('period'=>$ahead->getMonth().'-'.$ahead->getYear()),'myCalendar',true)?>"><?php echo $ahead->format('F, Y')?> »</a></div>
+<div id="calendar-title"><?php echo $chosen_date->format('F, Y')?></div>
+<table width="100%" id="calendar">
+<tr>
+	<td class="week_day">Domingo</td>
+	<td class="week_day">Segunda</td>
+	<td class="week_day">Terça</td>
+	<td class="week_day">Quarta</td>
+	<td class="week_day">Quinta</td>
+	<td class="week_day">Sexta</td>
+	<td class="week_day">Sábado</td>
+</tr>
+<?php 
+	$month 			= $chosen_date->getMonth();
+	$running_day	= date('w',mktime(0,0,0,$month,1,$chosen_date->getYear()));
+	$days_in_month  = date('t',mktime(0,0,0,$month,1,$chosen_date->getYear()));
+	$days_in_this_week  = 1;
+	$day_counter 		= 0;
+	$dates_array 		= array();
+	?>
+	<tr>
+	<?php
+	/* Blank days */
+	for($i = 0; $i < $running_day; $i++){ 
+		$days_in_this_week++;
+	?>
+		<td class="calendar-box-blank">
+		</td>
+	<?php
+	}
+
+	/* keep going with days.... */
+	for($list_day = 1; $list_day <= $days_in_month; $list_day++){ ?>
+		<td class="calendar-box <?php echo ($list_day==$today->getDayNoZero() && $highlight_today)?'highlight_today':'';?>">
+			<p class="box-date"><?php echo $list_day?></p>
+			<?php
+			if(!empty($this->calendar[$list_day])){
+				foreach ($this->calendar[$list_day] as $episode) { ?>
+					<p><?php echo $episode->release?></p>
+				<?php }
+			}
+			?>
+		</td>
+		<?php
+		if($running_day == 6){ ?></tr><?php 
+			if(($day_counter+1) != $days_in_month){ ?><tr><?php }
+			$running_day = -1;
+			$days_in_this_week = 0;
+		}
+		$days_in_this_week++; $running_day++; $day_counter++;
+	}
+
+	/* End month with blank days */
+	if($days_in_this_week > 1 && $days_in_this_week < 8){
+		for($i = 1; $i <= (8 - $days_in_this_week); $i++){
+			?>
+			<td class="calendar-box-blank">
+			</td>
+			<?php
+		}
+	}
+	?>
+	</tr>
+</table>

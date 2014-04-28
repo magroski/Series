@@ -1,0 +1,10 @@
+Thumbs.db
+/config/conf.php
+_no_log ReaderController.php
+_old ReaderController.php
+todo.txt
+.settings
+.DS_Store
+.vagrant
+.buildpath
+Vagrantfile 

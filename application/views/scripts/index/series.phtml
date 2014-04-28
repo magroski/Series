@@ -1,0 +1,27 @@
+		<?php $bg_colors = array('#1abc9c','#16a085','#2ecc71','#27ae60','#3498db','#2980b9','#9b59b6','#8e44ad','#34495e','#2c3e50','#f1c40f','#f39c12','#e67e22','#d35400','#e74c3c','#c0392b','#bdc3c7','#95a5a6','#7f8c8d');?>
+		<div id="main">
+			<?php foreach ($this->series as $series) { ?>
+				<?php $color = mt_rand(0, 18);
+				$bg = '';
+				if($series->image!='default.png'){
+					$bg = ' url(\'../i/'.$series->image.'\') center no-repeat';
+				}
+				?>
+				<div class="series-box" style="background:<?php echo $bg_colors[$color].$bg?> ;">
+					<h2><a href="<?php echo $this->url(array('permalink'=>$series->permalink),'seriesDetail',true)?>"><?php echo $series->name;?></a></h2>
+				</div>
+			<?php }?>
+		</div>
+		
+		<script type="text/javascript">
+	    $(document).ready(function(){
+	        var page = 2;
+	        $(window).scroll(function(){  
+	            if($(window).scrollTop() == $(document).height() - $(window).height()){
+		            $('#main').append('<img src="<?php echo HOST?>images/ajax-loader.gif" id="gif-loader"/>');
+	                $.get('<?php echo $this->url(array(), 'infiniteScroll', true) ?>', {'page':page}, function(data){ $('#main').append(data); $('#gif-loader').remove() } );
+	                page++;
+	            }  
+	        });
+	    });
+	</script>

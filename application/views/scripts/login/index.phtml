@@ -1,0 +1,121 @@
+	<style>
+	body{
+		background: #9b59b6;
+		text-align:center;
+		height:100%;
+	}
+	</style>
+	
+		<div id="login-box">
+			<div id="login-logo">
+				<img src="images/infinity.png"/>
+				<p>Login</p>
+			</div>
+			<div id="login-form">
+				<form method="post" action="">
+					<input name="email" type="email" placeholder="Email" id="login-email">
+					<input name="pass" type="password" placeholder="Senha" id="login-senha">
+					<button type="submit">Login</button>
+					<p class="text-center">OU</p>
+					<button type="submit" id="facebook_login">Login usando Facebook</button>
+				</form>
+			</div>
+		</div>
+		
+		<script type="text/javascript">
+			function checkRegExp(r, v){ return r.test(v); }
+			
+			$(document).ready(function(){
+				var email 		= false;
+				var password 	= false;
+
+				$("#login-email").blur(function(){
+					if ( !checkRegExp(/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/, $(this).val()) ){
+						email = false;
+						$(this).addClass('formError');
+					} else {
+						email = true;
+						$(this).removeClass('formError');
+					}
+				});
+
+				
+				$("#login-senha").blur(function(){
+					if ( !checkRegExp(/^([A-Z,a-z,0-9,.,_,-,@,#,&]{3,40})$/, $(this).val()) ){
+						password = false;
+						$(this).addClass('formError');
+					} else {
+						password = true;
+						$(this).removeClass('formError');
+					}
+				});
+
+				$("#login-form input[type=submit]").click(function(e){
+					e.preventDefault();
+					if (email && password){
+						$("#login-form").submit();
+					} else {
+						alert('Existe algum erro nos dados fornecidos.');
+					}
+				});
+
+				
+				$(function() { 
+					$('#facebook_login').click(function(e){
+						e.preventDefault();
+						FB.login(function(response) {
+							if (response.authResponse) {
+								var access_token =   FB.getAuthResponse()['accessToken'];
+								$.ajax({
+								  url: "<?php echo $this->url(array(),'loginFb',true)?>?token="+access_token,
+								  context: document.body,
+								  success: function(msg){
+								    window.location = msg;
+								  }
+								});
+						 	}
+						 }, {scope: 'email'});
+					});
+				});
+				
+			});
+		</script>
+		
+		<div id="fb-root"></div>
+		<script type="text/javascript">
+			var isLoggedAndAuthorized;
+			var userToken;
+			window.fbAsyncInit = function() {
+				FB.init({
+					appId: <?php echo FB_APP_ID?>,
+					status: true, 
+					channelUrl : '//WWW.SERIANDO.COM.BR/channel.html', // Channel File
+					cookie: true, 
+					oauth: true, 
+					xfbml: true
+				});		
+				
+				//Esse codigo eh executado quando a pagina carrega
+				FB.getLoginStatus(function(response) {
+				  if (response.status=='connected') {
+						var access_token = response.authResponse.accessToken;
+						//Caso o usuario esteja logado e autorizou a app (+L+A)
+						isLoggedAndAuthorized 	= true;
+						userToken 				= access_token;
+				  } else {
+						//Caso o usuario nao esteja logado no facebook (-L)
+						//alert('please log in first :)');
+						isLoggedAndAuthorized 	= false;
+						userToken 				= "";
+				  }
+				});
+			};
+			(function() {
+				var e = document.createElement('script');
+				e.type = 'text/javascript';
+				e.src = document.location.protocol +
+					'//connect.facebook.net/en_US/all.js';
+				e.async = true;
+				document.getElementById('fb-root').appendChild(e);
+			}());
+		</script>

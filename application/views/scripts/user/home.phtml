@@ -1,0 +1,309 @@
+<table width="100%" style="margin:0;border:0;vertical-align: top;margin-top:50px; height:100%;">
+	<tr>
+		<td class="main-sidebar">
+			<a href="" id="search_home"><span class="fui-search" style="padding-right:5px;"></span>Procurar séries</a>
+			<form id="search_home_form" method="post" action="<?php echo $this->url(array(),'search',true)?>">
+				<input type="text" name="q" value="" placeholder="Procurar"/>
+			</form>
+			<?php foreach ($this->my_series as $series) { ?>
+				<a class="open_series" id="<?php echo $series->id?>"><?php echo $series->name;?></a>
+			<?php }?>
+		</td>
+		<td class="sub-sidebar">
+			<a>Escolha uma série ao lado</a>
+		</td>
+		<td class="sub-sub-sidebar">
+			<a>Lista de episódios</a>
+		</td>
+		<td id="episode-panel">
+			<span class="fui-cross home_unfollow" title="Parar de seguir"></span>
+			<h1></h1>
+			<h2></h2>
+			<img class="cover" src=""/>
+			<div id="series-info" >
+				<div id="series-data">
+					<img src="<?php echo HOST?>images/time.png" width="100px"/>
+					<span class="tag">Status:</span><span class="tag-info status"></span>
+					<span class="tag">Duração:</span><span class="tag-info duration"></span>
+					<span class="tag">Exibido em:</span><span class="tag-info airdate"></span>
+				</div>
+			</div>
+		</td>
+	</tr>
+</table>
+
+<script type="text/javascript">
+var guide = {};
+var watched = {};
+var current_series;
+var current_season;
+
+<?php if(!is_null($this->eager_json)){?>
+guide[<?php echo $this->my_series[0]->id ?>] = <?php echo $this->eager_json;?>['episodes'];
+guide[<?php echo $this->my_series[0]->id ?>]['series_data'] = <?php echo $this->eager_json;?>['series'];
+<?php }?>
+
+$(document).ready(function(){
+	$.ajax({
+		type : 'POST',
+		url  : '<?php echo $this->url(array(),'ajaxLoadWatched',true)?>',
+		dataType : 'json',
+		success : function(json_data){
+			watched = json_data;
+			$('.open_series:first').click();
+		}
+	});
+});
+
+function loadEpisodes(season_index){
+	$('.sub-sub-sidebar').empty();
+	var length = guide[current_series][season_index][1].length;
+	for (var i = 0; i < length; i++) {
+  		var episode = guide[current_series][season_index][1][i];
+  		var watch_span;
+  		if ($.inArray(episode.id,watched)>-1){
+  			watch_span = '<span class="fui-check" data-check-type="episode" id="_'+episode.id+'" title="Visto"></span>';
+  	  	} else {
+  	  		watch_span = '<span class="fui-eye" data-check-type="episode" id="_'+episode.id+'" title="Marcar como visto"></span>';
+  	  	}
+  		$('.sub-sub-sidebar').append('<a id="e_'+i+'">'+watch_span+(season_index+1)+'x'+(i+1)+' - '+episode.name+'</a>');
+	}
+	current_season = season_index;
+}
+
+function loadSeasons(series_id){
+	$('#episode-panel h1').empty();
+	$('#episode-panel h1').text(guide[series_id]['series_data'].name);
+	
+	$('#episode-panel .cover').attr('src','');
+	$('#episode-panel .cover').attr('src',guide[series_id]['series_data'].image);
+	
+	$('#series-data .status').empty();
+	$('#series-data .status').text(guide[series_id]['series_data'].status);
+	
+	$('#series-data .duration').empty();
+	$('#series-data .duration').text(guide[series_id]['series_data'].runtime);
+	
+	$('#episode-panel h2').empty();
+	$('#episode-panel h2').text(guide[series_id][0][0].name);
+	
+	$('.sub-sidebar').empty();
+	$('.sub-sub-sidebar').empty();
+	
+	var length = guide[series_id].length;
+	for (var i = 0; i < length; i++) {
+  		var season = guide[series_id][i][0];
+  		var watch_span;
+  		if ($.inArray(season.id,watched)>-1){
+  	  		watch_span = '<span class="fui-check" data-check-type="season" id="_'+season.id+'" title="Visto"></span>';
+  	  	} else {
+  	  		watch_span = '<span class="fui-eye" data-check-type="season" id="_'+season.id+'" title="Marcar como visto"></span>';
+  	  	}
+  		if(i==0){
+  			$('.sub-sidebar').append('<a id="s_'+i+'" class="selected">'+watch_span+season.name+'</a>');
+  		} else {
+	  		$('.sub-sidebar').append('<a id="s_'+i+'">'+watch_span+season.name+'</a>');
+  	  	}
+	}
+	current_series = series_id;
+	loadEpisodes(0);
+}
+
+function loadData(series_id){
+	$.ajax({
+		type : 'POST',
+		url  : '<?php echo $this->url(array(),'ajaxLoadSeasons',true)?>',
+		data : {'id':series_id},
+		dataType : 'json',
+		success : function(json_data){
+			guide[$('.main-sidebar a.selected').attr('id')] = json_data['episodes'];
+			guide[$('.main-sidebar a.selected').attr('id')]['series_data'] = json_data['series'];
+			loadSeasons($('.main-sidebar a.selected').attr('id'));
+		}
+	});
+}
+
+$('.open_series').on('click',function(e){
+	$('.main-sidebar a').removeClass('selected');
+	$(this).toggleClass('selected');
+	var id  = $(this).attr('id');
+	if(typeof guide[id] === 'undefined'){
+		loadData(id);
+	} else {
+		loadSeasons(id);
+	}
+});
+
+$(document).on('click','.home_unfollow',function(){
+	if (confirm('Deseja deixar de acompanhar essa série?')) {
+		$('.sub-sidebar').empty();
+		$('.sub-sub-sidebar').empty();
+		$('#episode-panel h2').empty();
+		$('#episode-panel h1').empty();
+		$('#series-data .airdate').text('');
+		$('#series-data .duration').text('');
+		$('#series-data .status').text('');
+		$('#'+current_series).remove();
+		$.ajax({
+			type : 'POST',
+			url  : '<?php echo $this->url(array(),'ajaxUnwatch',true)?>',
+			data : {'id':current_series},
+		});
+	}
+});
+
+$(document).on('click','.sub-sidebar a',function(e){
+	$('.sub-sidebar a').removeClass('selected');
+	$(this).toggleClass('selected');
+	var id  = $(this).attr('id');
+	id 		= id.substr(2);
+	loadEpisodes(id*1);
+	$('#episode-panel h2').empty();
+	$('#episode-panel h2').text(guide[current_series][current_season][0].name);
+
+	$('#series-data .airdate').text('');
+});
+
+$(document).on('click','.sub-sub-sidebar a',function(e){
+	$('.sub-sub-sidebar a').removeClass('selected');
+	$(this).toggleClass('selected');
+	var id  = $(this).attr('id');
+	id 		= id.substr(2);
+	$('#episode-panel h2').empty();
+	$('#episode-panel h2').text(guide[current_series][current_season][1][id].name);
+
+	if(guide[current_series][current_season][1][id].airdate==0){
+		$('#series-data .airdate').text('N/D');
+	} else {
+		airtime = new Date(guide[current_series][current_season][1][id].airdate*1000);
+		$('#series-data .airdate').text(airtime.getDate()+'/'+(airtime.getMonth()+1)+'/'+airtime.getFullYear());
+	}
+});
+
+function unwatchEpisode(id){
+	$.ajax({
+		type : 'POST',
+		url  : '<?php echo $this->url(array(),'ajaxUnwatchEpisode',true)?>',
+		data : {'id':id},
+		dataType: 'json',
+		success : function(json_data){
+			var length = json_data.length;
+			for (var i = 0; i < length; i++) {
+				var $insertion_point = $('#_'+json_data[i]).parent(); 
+				$('#_'+json_data[i]).remove();
+				$insertion_point.prepend('<span class="fui-eye" id="_'+json_data[i]+'" title="Marcar como visto"></span>');
+			}
+			var tmp = [];
+			for (var j = 0; watched.length > j; j++) {
+				if (json_data.indexOf(watched[j]) == -1) {
+					tmp.push(watched[j]);
+			    }
+			}
+			watched = tmp;
+		}
+	});
+}
+
+$(document).on('click','.fui-check',function(e){
+	var type	= $(this).attr('data-check-type');
+	var id  	= $(this).attr('id');
+	id 			= id.substr(1);
+	if(type=='season'){
+		if (confirm('Você deseja desmarcar TODOS episódios desse grupo?')) { 
+			$(this).parent().prepend('<span class="fui-eye" data-check-type="'+type+'" id="_'+id+'" title="Marcar como visto"></span>');
+			$(this).remove();
+			unwatchEpisode(id);
+		}
+	} else {
+		$(this).parent().prepend('<span class="fui-eye" data-check-type="'+type+'" id="_'+id+'" title="Marcar como visto"></span>');
+		$(this).remove();
+		unwatchEpisode(id);
+	}
+});
+
+function watchEpisode(id){
+	$.ajax({
+		type : 'POST',
+		url  : '<?php echo $this->url(array(),'ajaxWatchEpisode',true)?>',
+		data : {'id':id},
+		dataType: 'json',
+		success : function(json_data){
+			var length = json_data.length;
+			for (var i = 0; i < length; i++) {
+				var $insertion_point = $('#_'+json_data[i]).parent(); 
+				$('#_'+json_data[i]).remove();
+				$insertion_point.prepend('<span class="fui-check" id="_'+json_data[i]+'" title="Visto"></span>');
+			}
+			watched = watched.concat(json_data);
+		}
+	});
+}
+
+$(document).on('click','.fui-eye',function(e){
+	var type	= $(this).attr('data-check-type');
+	var id  	= $(this).attr('id');
+	id 			= id.substr(1);
+	if(type=='season'){
+		if (confirm('Deseja marcar todos episódios desse grupo?')) {
+			$(this).parent().prepend('<span class="fui-check" data-check-type="'+type+'" id="_'+id+'" title="Visto"></span>');
+			$(this).remove();
+			watchEpisode(id);
+		}
+	} else {
+		$(this).parent().prepend('<span class="fui-check" data-check-type="'+type+'" id="_'+id+'" title="Visto"></span>');
+		$(this).remove();
+		watchEpisode(id);
+	}
+});
+
+$('#search_home').click(function(e){
+	e.preventDefault();
+	$(this).hide();
+	$('#search_home_form').show();
+	$('#search_home_form input').focus();
+});
+
+$('#search_home_form').focusout(function(){
+	$(this).hide();
+	$('#search_home').show();
+});
+</script>
+
+
+<script type="text/javascript" src="<?php echo HOST.'/js/tutorial-home.js'?>"></script>
+
+<div id="walkthrough">
+	<div id="tutorial-open" style="display:none;">
+		<p class="tooltipTitle">Suas séries (1/5)</p>
+		<p>Aqui você irá encontrar as séries que você acompanha.</p>
+		<br>
+		<a href="javascript:;" class="next-step" style="float:right;">Próximo</a>
+	</div>
+	<div id="tutorial-episode" style="display:none;">
+		<p class="tooltipTitle">Episódios (2/5)</p>
+		<p>Selecionando um episódio, você poderá ver suas informações.</p>
+		<br>
+		<a href="javascript:;" class="prev-step" style="float:left;">Anterior</a>
+		<a href="javascript:;" class="next-step" style="float:right;">Próximo</a>
+	</div>
+	<div id="tutorial-unfollow" style="display:none;">
+		<p class="tooltipTitle">Episódios (3/5)</p>
+		<p>E aqui você pode parar de acompanhar o seriado.</p>
+		<br>
+		<a href="javascript:;" class="prev-step" style="float:left;">Anterior</a>
+		<a href="javascript:;" class="next-step" style="float:right;">Próximo</a>
+	</div>
+	<div id="tutorial-calendar" style="display:none;">
+		<p class="tooltipTitle">Calendário (4/5)</p>
+		<p>No calendário você acompanha a data de exibição dos seus seriados favoritos.</p>
+		<br>
+		<a href="javascript:;" class="prev-step" style="float:left;">Anterior</a>
+		<a href="javascript:;" class="next-step" style="float:right;">Próximo</a>
+	</div>
+	<div id="tutorial-series" style="display:none;">
+		<p class="tooltipTitle">Séries (5/5)</p>
+		<p>Aqui você acessa nossa lista completa de séries.</p>
+		<br>
+		<a href="javascript:;" class="prev-step" style="float:left;">Anterior</a>
+	</div>
+</div>

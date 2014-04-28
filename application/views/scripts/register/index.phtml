@@ -1,0 +1,171 @@
+	<style>
+	body{
+		background: #c0392b;
+		text-align:center;
+		height:100%;
+	}
+	</style>
+	
+		<div id="register-box">
+			<div id="register-logo">
+				<img src="images/clipboard.png"/>
+				<p>Cadastre-se no <strong>Seriando</strong><p>
+			</div>
+			<div id="register-form">
+				<form method="post" action="">
+					<input type="text" placeholder="Nome" name="name" id="register-name">
+					<input type="email" placeholder="Email" name="email" id="register-email">
+					<input name="password" type="password" placeholder="Senha" id="register-senha">
+					<input name="password2" type="password" placeholder="Repetir senha" id="register-senha2">
+					<?php echo $this->recaptcha->getHtml();?>
+					<button type="submit">Cadastrar</button>
+					<p class="text-center">OU</p>
+					<button type="submit" id="facebook_register">Cadastrar usando Facebook</button>
+				</form>
+			</div>
+		</div>
+		
+		<script type="text/javascript">
+		function checkRegExp(r, v){ return r.test(v); }
+		
+		$(document).ready(function(){
+			var name 		= false;
+			var email 		= false;
+			var password 	= false;
+			var password2	= false;
+
+			$("#register-name").blur(function(){
+				if ( !checkRegExp(/^[A-Za-zÂÀÁÄÃâãàáäÊÈÉËêèéëÎÍÌÏîíìïÔÕÒÓÖôõòóöÛÙÚÜûúùüÇç. ]*$/, $(this).val()) ){
+					name = false;
+					$(this).addClass('formError');
+				} else {
+					$(this).removeClass('formError');
+				}
+			});
+
+			$("#register-email").blur(function(){
+				if ( !checkRegExp(/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/, $(this).val()) ){
+					email = false;
+					$(this).addClass('formError');
+				} else {
+					$.ajax({
+						type 	: "POST",
+						url	 	: "/ajax/validate-email",
+						data 	: "email="+$(this).val(),
+						success : function(status){
+							if(status == 'ok'){
+								email = true;
+								$("#register-email").removeClass('formError');
+							} else {
+								email = false;
+								$("#register-email").addClass('formError');
+							}
+						} 
+					});
+				}
+			});
+
+			
+			$("#register-senha").blur(function(){
+				if ( !checkRegExp(/^([A-Z,a-z,0-9,.,_,-,@,#,&]{3,40})$/, $(this).val()) ){
+					password = false;
+					$(this).addClass('formError');
+				} else {
+					if ( $("#register-senha2").val() != "" && $(this).val() == $("#register-senha2").val() ){
+						password  = true;
+						$(this).removeClass('formError');
+						password2 = true;
+						$('#register-senha2').removeClass('formError');
+					} else {
+						password = true;
+						$(this).removeClass('formError');
+					}
+				}
+			});
+
+			$("#register-senha2").blur(function(){
+				if ( !checkRegExp(/^([A-Z,a-z,0-9,.,_,-,@,#,&]{3,40})$/, $(this).val()) ){
+					password2 = false;
+					$(this).addClass('formError');
+				} else {
+					if ( $("#register-senha").val() != "" && $(this).val() == $("#register-senha").val() ){
+						password  = true;
+						$(this).removeClass('formError');
+						password2 = true;
+						$('#register-senha').removeClass('formError');
+					} else {
+						password2 = false;
+						$(this).addClass('formError');
+					}
+				}
+			});
+
+			
+			$("#register-form input[type=submit]").click(function(e){
+				e.preventDefault();
+				if (name && email && password && password2){
+					$("#register-form").submit();
+				} else {
+					alert('Existe algum erro nos dados fornecidos.');
+				}
+			});
+
+			$(function() {
+				$('#facebook_register').click(function(e){
+					e.preventDefault();
+					FB.login(function(response) {
+						if (response.authResponse) {
+							var access_token =   FB.getAuthResponse()['accessToken'];
+							$.ajax({
+							  url: "<?php echo $this->url(array(),'registerFb',true)?>?token="+access_token,
+							  context: document.body,
+							  success: function(msg){
+								  window.location = msg;
+							  }
+							});
+					 	}
+					 }, {scope: 'email'});
+				});
+			});
+			
+		});
+	</script>
+	
+	
+	<div id="fb-root"></div>
+	<script type="text/javascript">
+		var isLoggedAndAuthorized;
+		var userToken;
+		window.fbAsyncInit = function() {
+			FB.init({
+				appId: <?php echo FB_APP_ID?>,
+				status: true, 
+				channelUrl : '//WWW.SERIANDO.COM.BR/channel.html', // Channel File
+				cookie: true, 
+				oauth: true, 
+				xfbml: true
+			});		
+			
+			//Esse codigo eh executado quando a pagina carrega
+			FB.getLoginStatus(function(response) {
+			  if (response.status=='connected') {
+					var access_token = response.authResponse.accessToken;
+					//Caso o usuario esteja logado e autorizou a app (+L+A)
+					isLoggedAndAuthorized 	= true;
+					userToken 				= access_token;
+			  } else {
+					//Caso o usuario nao esteja logado no facebook (-L)
+					//alert('please log in first :)');
+					isLoggedAndAuthorized 	= false;
+					userToken 				= "";
+			  }
+			});
+		};
+		(function() {
+			var e = document.createElement('script');
+			e.type = 'text/javascript';
+			e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+			e.async = true;
+			document.getElementById('fb-root').appendChild(e);
+		}());
+	</script>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+  <head>
+	<?php echo $this->headTitle() ?>
+	
+	<?php if($this->description){ ?>
+		<meta name="description" content="<?php echo $this->description ?>" />
+	<?php } ?>
+	
+    <?php echo $this->headLink() ?>
+    <link rel="shortcut icon" href="<?php echo HOST?>favicon.ico">
+    
+	<?php echo $this->headMeta() ?>
+    <meta charset="utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    <?php echo $this->headScript() ?>
+    
+  </head>
+  
+  <body style="height:100%">
+		<div id="header">
+			<?php if($this->isLogged){?>
+				<a href="<?php echo $this->url(array(),'logout',true)?>">Logout</a>
+				<span class="separador">·</span>
+				<a href="<?php echo $this->url(array(),'series',true)?>" id="series-link">Séries</a>
+				<span class="separador">·</span>
+				<a href="" id="search_top">Busca</a>
+				<form id="search_form_top" method="post" action="<?php echo $this->url(array(),'search',true)?>">
+					<input type="text" name="q" value="" placeholder="Digite o termo e aperte Enter"/>
+				</form>
+				<a href="<?php echo $this->url(array(),'home',true)?>" class="left">Home</a>
+				<span class="separador left">·</span>
+				<a href="<?php echo $this->url(array(),'myCalendar',true)?>" class="left" id="calendar-link">Meu Calendário</a>
+			<?php } else { ?>
+				<a href="<?php echo $this->url(array(),'register',true)?>">Cadastre-se</a>
+				<span class="separador">·</span>
+				<a href="<?php echo $this->url(array(),'login',true)?>">Login</a>
+				<span class="separador">·</span>
+				<a href="<?php echo $this->url(array(),'series',true)?>">Séries</a>
+				<span class="separador">·</span>
+				<a href="" id="search_top">Busca</a>
+				<form id="search_form_top" method="post" action="<?php echo $this->url(array(),'search',true)?>">
+					<input type="text" name="q" value="" placeholder="Digite o termo e aperte Enter"/>
+				</form>
+				<a href="<?php echo $this->url(array(),'index',true)?>" class="left">Seriando</a>
+			<?php } ?>
+		</div>
+		<?php echo $this->layout()->content; ?>
+
+		<script type="text/javascript">
+		$(document).ready(function(){
+			$('#search_top').click(function(e){
+				e.preventDefault();
+				$(this).hide();
+				$('#search_form_top').show();
+				$('#search_form_top input').focus();
+			});
+			
+			$('#search_form_top').focusout(function(){
+				$(this).hide();
+				$('#search_top').show();
+			});
+		});
+		</script>
+  </body>
+</html>
