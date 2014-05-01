@@ -18,7 +18,7 @@ if($this->period){
 	$days_passed_this_month  = date('j');
 	$days_in_month  		 = date('t',mktime(0,0,0,$month,1,$chosen_date->getYear()));
 	$ahead = new Frogg_Time_Time(time()+(($days_in_month-$days_passed_this_month+1)*Frogg_Time_Time::DAY));
-	$behind= new Frogg_Time_Time(time()-(($days_in_month+1)*Frogg_Time_Time::DAY));
+	$behind= new Frogg_Time_Time(time()-(($days_passed_this_month+1)*Frogg_Time_Time::DAY));
 	$highlight_today		 = true;
 }
 
