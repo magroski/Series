@@ -28,13 +28,13 @@ if($this->period){
 <div id="calendar-title"><?php echo $chosen_date->format('F, Y')?></div>
 <table width="100%" id="calendar">
 <tr>
-	<td class="week_day">Domingo</td>
-	<td class="week_day">Segunda</td>
-	<td class="week_day">Terça</td>
-	<td class="week_day">Quarta</td>
-	<td class="week_day">Quinta</td>
-	<td class="week_day">Sexta</td>
-	<td class="week_day">Sábado</td>
+	<td class="week_day"><span>Domingo</span></td>
+	<td class="week_day"><span>Segunda</span></td>
+	<td class="week_day"><span>Terça</span></td>
+	<td class="week_day"><span>Quarta</span></td>
+	<td class="week_day"><span>Quinta</span></td>
+	<td class="week_day"><span>Sexta</span></td>
+	<td class="week_day"><span>Sábado</span></td>
 </tr>
 <?php 
 	$month 			= $chosen_date->getMonth();
@@ -62,7 +62,7 @@ if($this->period){
 			<?php
 			if(!empty($this->calendar[$list_day])){
 				foreach ($this->calendar[$list_day] as $episode) { ?>
-					<p><?php echo $episode->release?></p>
+					<p><?php echo(in_array($episode->id, $this->seen_episodes))?'<span class="fui-eye"></span>':'';?><?php echo $episode->release?></p>
 				<?php }
 			}
 			?>

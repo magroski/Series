@@ -8,7 +8,7 @@ class ReaderController extends Project_Controller{
 	 * If the show is valid, all its episodes will be read and inserted on 'series' table
 	 */
     public function indexAction(){
-    	$logger 	= new Frogg_Log('/home/seriando/log/new_series.log');
+    	$logger 	= new Frogg_Log('/home2/bleachse/public_html/seriando/log/new_series.log');
     	$control    = new Application_Model_NewSeriesControl(1);
     	$series_control = $control->nextSeries();
     	if(!$series_control){ $logger->warn('No new series'); $logger->close(); die();}
@@ -147,7 +147,7 @@ class ReaderController extends Project_Controller{
      * Reads the full schedule as far as possible and schedule the data to be read [US version]
      */
     public function fullAction(){
-    	$logger = new Frogg_Log('/home/seriando/log/calendar_US.log');
+    	$logger = new Frogg_Log('/home2/bleachse/public_html/seriando/log/calendar_US.log');
     	$xml = new XMLReader();
     	if(!$xml->open('http://services.tvrage.com/feeds/fullschedule.php?country=US')){
     		$logger->err('Failed to open input file');
@@ -189,9 +189,51 @@ class ReaderController extends Project_Controller{
      * Reads the full schedule as far as possible and schedule the data to be read [UK version]
      */
     public function fullUkAction(){
-    	$logger = new Frogg_Log('/home/seriando/log/calendar_UK.log');
+    	$logger = new Frogg_Log('/home2/bleachse/public_html/seriando/log/calendar_UK.log');
     	$xml = new XMLReader();
     	if(!$xml->open('http://services.tvrage.com/feeds/fullschedule.php?country=UK')){
+    		$logger->err('Failed to open input file');
+    		$logger->close();
+    		die;
+    	}
+    	$logger->info('Starting to index full schedule');
+    	$series = new Application_Model_Series();
+    	while ($xml->read()){
+    		while($xml->read() && $xml->name != 'DAY');//Goes to next <DAY>
+    		$timestamp = new Frogg_Time_Time($xml->getAttribute('attr'));
+    		$timestamp = $timestamp->getUnixTstamp();
+    		while($xml->read()){ //Daily shows reading
+    			if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'show'){ //Found new show
+    				$episode_name = $xml->getAttribute('name');
+    				$show_id = '';
+    				while($xml->read() && $xml->name != 'sid'); //Found show id
+    				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'sid'){
+    					$show_id = $xml->readString();
+    				}
+    				while($xml->read() && $xml->name != 'ep'); //Found episode air order
+    				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'ep'){
+    					$episode_num = $xml->readString();
+    					$scheduled = new Application_Model_Scheduled($show_id,'http://services.tvrage.com/tools/quickinfo.php?show='.urlencode($episode_name).'&ep='.$episode_num,Application_Model_Scheduled::UNREAD,$timestamp);
+    					$scheduled->save();
+    					$logger->ok('Saved : '.$scheduled->link);
+    				}
+    			$xml->next('show');
+    			} else if($xml->nodeType == XMLReader::END_ELEMENT && $xml->name == 'DAY'){ //Found </DAY>
+    				break;
+    			}
+    		}//END - Daily shows reading
+    	}
+    	$logger->close();
+    	die;
+    }
+	
+	/**
+     * Reads the full schedule as far as possible and schedule the data to be read [CANADA version]
+     */
+    public function fullCaAction(){
+    	$logger = new Frogg_Log('/home2/bleachse/public_html/seriando/log/calendar_CA.log');
+    	$xml = new XMLReader();
+    	if(!$xml->open('http://services.tvrage.com/feeds/fullschedule.php?country=CA')){
     		$logger->err('Failed to open input file');
     		$logger->close();
     		die;
@@ -233,7 +275,7 @@ class ReaderController extends Project_Controller{
      * and inserting new series into 'newseries' table
      */
     public function fetchDataAction(){
-    	$logger = new Frogg_Log('/home/seriando/log/fetch.log');
+    	$logger = new Frogg_Log('/home2/bleachse/public_html/seriando/log/fetch.log');
 		try {
 			for($i = 0 ; $i < 3 ; $i++){
 				//Fetch the next scheduled episode to be read
@@ -353,16 +395,16 @@ class ReaderController extends Project_Controller{
 		}
     }
     
-    //Clean from the schedule table all episodes older than 7 days
+    //Clean from the schedule table all episodes older than 3 days
     public function cleanScheduleAction(){
     	$actual = new Frogg_Time_Time();
-    	$cleaning_day   = $actual->subtract(7*24*60*60);
+    	$cleaning_day   = $actual->subtract(3*24*60*60);
     	$cleaning_stamp = $cleaning_day->getUnixTstamp();
     	$sql = new Frogg_Db_Sql('DELETE FROM `scheduled` WHERE `timestamp` < '.$cleaning_stamp);
     	die;
     }
     
-    //Clean from the schedule table all episodes older than 7 days
+    //Clean from the schedule table all episodes from invalid series
     public function cleanInvalidScheduleAction(){
     	$sql = new Frogg_Db_Sql('SELECT `rage_id` FROM `newseries` WHERE `flag` = '.Application_Model_NewSeries::INVALID);
     	$ids = array();
@@ -388,7 +430,7 @@ class ReaderController extends Project_Controller{
     }
     
     private function allowedCountry($country){
-    	$allowed = array('US','UK');
+    	$allowed = array('US','UK','CA');
     	return in_array($country, $allowed);
     }
     
@@ -408,5 +450,208 @@ class ReaderController extends Project_Controller{
     	$time = new Frogg_Time_Time($date->format('Y-m-d'));
     	return $time->getUnixTstamp();
     }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	 public function fixAction(){
+		for($meuContador = 0; $meuContador < 500 ; $meuContador++){
+			$logger 	= new Frogg_Log('/home2/bleachse/public_html/seriando/log/new_series.log');
+			$control    = new Application_Model_NewSeriesControl(1);
+			$series_control = $control->nextSeries();
+			if(!$series_control){ $logger->warn('No new series'); $logger->close(); continue; }
+			
+			$xml = new XMLReader();
+			if(!$xml->open('http://services.tvrage.com/feeds/full_show_info.php?sid='.$series_control->rage_id)){
+				$logger->err('Failed to open input file : '.$series_control->rage_id);
+				$logger->close();
+				continue;
+			}
+			$logger->info('Starting to log new_series_id : '.$series_control->rage_id);
+			$series = new Application_Model_Series();
+			while ($xml->read()){
+				while($xml->read() && $xml->name != 'name');
+				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'name'){
+					$series->name = $xml->readString();
+				}
+				while($xml->read() && $xml->name != 'showid');
+				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'showid'){
+					$series->rage_id = $xml->readString();
+					$double_check = new Application_Model_Series();
+					$logger->info('Double check [my_id]:[rage_id] '.$series_control->rage_id.':'.$series->rage_id);
+					if($double_check->loadField('rage_id', $series->rage_id)){
+						$series_control->flag = Application_Model_NewSeries::ERROR;
+						$series_control->update();
+						$logger->err('Series already registered rage_id:'.$series->rage_id);
+						$logger->close();
+						continue;
+					}
+				}
+				while($xml->read() && $xml->name != 'origin_country');
+				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'origin_country'){
+					if(!$this->allowedCountry($xml->readString())){
+						$series_control->flag = Application_Model_NewSeries::INVALID;
+						$series_control->update();
+						$logger->warn('Series country not allowed rage_id:'.$series->rage_id);
+						$logger->close();
+						continue;
+					}
+				}
+				while($xml->read() && $xml->name != 'status');
+				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'status'){
+					$series->status = $this->parseStatus($xml->readString());
+				}
+				while($xml->read() && $xml->name != 'classification');
+				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'classification'){
+					if($this->avoidedClassification($xml->readString())){
+						$series_control->flag = Application_Model_NewSeries::INVALID;
+						$series_control->update();
+						$logger->warn('Series classification invalid rage_id:'.$series->rage_id);
+						$logger->close();
+						continue;
+					}
+				}
+				while($xml->read() && $xml->name != 'runtime');
+				if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'runtime'){
+					$series->runtime = $xml->readString();
+				}
+				$series->image	   = 'default.png';
+				$series->timestamp = time();
+				$series->permalink = $series->permalinkFor('name');
+				$series->order	   = NEW_SERIES;
+				if(!$series->rage_id){
+					$series_control->flag = Application_Model_NewSeries::ERROR;
+					$series_control->update();
+					$logger->err('Empty XML');
+					$logger->close();
+					continue;
+				}
+				$series_id = $series->save();
+				$logger->ok('Saved');
+				
+				$series_bucket = new Application_Model_SeriesBucket($series->name,$series->permalink);
+				$series_bucket->save();
+				
+				$has_episodes = $xml->next('Episodelist');
+				if($has_episodes){
+					while($xml->read() && !($xml->nodeType == XMLReader::END_ELEMENT && $xml->name == 'Episodelist')){
+						while($xml->read() && $xml->name != 'Season');//Goes to next <Season>
+						if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'Season'){
+							$season_num = $xml->getAttribute('no');
+							$season = new Application_Model_Series();
+							$season->series_id 	= $series_id;
+							$season->name 	 	= $season_num.'ª Temporada';
+							$season->order		= $season_num * 1000; //According to format XXX.000 for seasons 
+							if($season_num < 10){ $season_num = '0'.$season_num; }
+							$season->release 	= $series->name.' Season '.$season_num;
+							$season->timestamp 	= time();
+							$season_id 			= $season->save();
+							$release			= new Application_Model_Release($season_id,$season->release,time());
+							$release->save();
+						}
+						while($xml->read()){ //Season episodes reading
+							if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'episode'){ //Found new episode
+								$episode = new Application_Model_Series();
+								$episode->season_id = $season_id;
+								$episode->series_id = $series_id;
+								$episode->timestamp = time();
+								while($xml->read() && $xml->name != 'seasonnum');
+								if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'seasonnum'){
+									$episode_num = $xml->readString();
+									$episode->release = $series->name.' S'.$season_num.'E'.$episode_num;
+									$episode->order   = $season->order + ($episode_num*1); //According to format XXX.yyy for episodes
+								}
+								while($xml->read() && $xml->name != 'airdate');
+								if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'airdate'){
+									$date = new Frogg_Time_Time($xml->readString());
+									$episode->airdate = $date->getUnixTstamp();
+								}
+								while($xml->read() && $xml->name != 'title');
+								if($xml->nodeType == XMLReader::ELEMENT && $xml->name == 'title'){
+									$episode->name = $xml->readString();
+								}
+								$episode_id = $episode->save();
+								$release	= new Application_Model_Release($episode_id,$episode->release,$episode->airdate);
+								$release->save();
+								$xml->next('episode');
+							} else if($xml->nodeType == XMLReader::END_ELEMENT && $xml->name == 'Season'){ //Found season finale
+								break;
+							}
+						}//END - Season episodes reading
+					}
+				}
+				$series_control->flag = Application_Model_NewSeries::READ;
+				$series_control->update();
+				$logger->ok('Great Success !!');
+				$logger->close();    		
+				continue;
+			}
+		}
+		echo 'contou';
+    }
+
     
 }

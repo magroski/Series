@@ -29,16 +29,6 @@ class Application_Model_WatchingDAO extends Frogg_DAO{
 	public function watchSeries($series_id, $user_id){
 		$watching = new Application_Model_Watching($user_id, $series_id, $series_id, $series_id);
 		$watching->save();
-		/*
-		$sql = new Frogg_Db_Sql('SELECT `id`,`season_id` FROM `series` WHERE `series_id` ='.$series_id);
-		if($sql->rows()){
-			while($row=$sql->fetch()){
-				if(!$row['season_id']){$row['season_id']=$row['id'];}
-				$watching = new Application_Model_Watching($user_id, $series_id, $row['season_id'],$row['id'], 0);
-				$watching->save();
-			}
-		}
-		*/
 	}
 	
 	public function markSeason($user_id, $season_id){
@@ -118,6 +108,18 @@ class Application_Model_WatchingDAO extends Frogg_DAO{
 			}
 		}
 		
+		return $episodes;
+	}
+	
+	public function filterByEpisodesList($user_id, $episodes_id){
+		$episodes_id = implode(',', $episodes_id);
+		$sql = new Frogg_Db_Sql('SELECT `episode_id` FROM `watching` WHERE `user_id` = '.$user_id.' AND `episode_id` IN ('.$episodes_id.')');
+		$episodes = array();
+		if($sql->rows()){
+			while($row=$sql->fetch()){
+				array_push($episodes, $row['episode_id']);
+			}
+		}
 		return $episodes;
 	}
 	

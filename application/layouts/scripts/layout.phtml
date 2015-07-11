@@ -31,11 +31,11 @@
 				<form id="search_form_top" method="post" action="<?php echo $this->url(array(),'search',true)?>">
 					<input type="text" name="q" value="" placeholder="Digite o termo e aperte Enter"/>
 				</form>
-				<a href="<?php echo $this->url(array(),'home',true)?>" class="left">Home</a>
+				<a href="<?php echo $this->url(array(),'home',true)?>" class="left"><i class="icon ion-android-home"></i></a>
 				<span class="separador left">·</span>
 				<a href="<?php echo $this->url(array(),'myCalendar',true)?>" class="left" id="calendar-link">Meu Calendário</a>
 			<?php } else { ?>
-				<a href="<?php echo $this->url(array(),'register',true)?>">Cadastre-se</a>
+				<a href="<?php echo $this->url(array(),'register',true)?>">Cadastro</a>
 				<span class="separador">·</span>
 				<a href="<?php echo $this->url(array(),'login',true)?>">Login</a>
 				<span class="separador">·</span>

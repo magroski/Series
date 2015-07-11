@@ -1,6 +1,7 @@
-<?php $bg_colors = array('#1abc9c','#16a085','#2ecc71','#27ae60','#3498db','#2980b9','#9b59b6','#8e44ad','#34495e','#2c3e50','#f1c40f','#f39c12','#e67e22','#d35400','#e74c3c','#c0392b','#bdc3c7','#95a5a6','#7f8c8d');?>
-<?php foreach ($this->series as $series) { ?>
-	<?php $color = mt_rand(0, 18);
+<?php $bg_colors = array('#254668','#2b537b','#31608f','#376ca2','#3d79b6'); $color = -1;?>
+<?php foreach ($this->series as $series) {
+	++$color;
+	if($color>4){ $color = 0; }
 	$bg = '';
 	if($series->image!='default.png'){
 		$bg = ' url(\'../i/'.$series->image.'\') center no-repeat';

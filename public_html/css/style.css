@@ -10,6 +10,7 @@
 	border-top: 3px solid #8e44ad;
 	width:100%;
 	height:47px;
+	line-height:47px;
 	position:fixed;
 	z-index:1000;
 	left:0;
@@ -17,13 +18,13 @@
 }
 	#header .separador{
 		float:right;
-		padding:15px;
+		padding:0 15px;
 		text-decoration:none;
 		color:white;
 	}
 	#header a{
 		float:right;
-		padding:15px;
+		padding:0 15px;
 		text-decoration:none;
 		color:white;
 	}
@@ -360,24 +361,28 @@
 /** SERIES **/
 #main .series-box{
 	width: 20%;
-	height: 150px;
+	padding-left:10px;
+	padding-top:10px;
+	overflow:hidden;
+	box-sizing:border-box;
+	height: 70px;
 	float: left;
 	color: #ecf0f1;
+	text-align:left;
 }
 	#main .series-box h2{
 		margin: 0;
 		font-size: 18px;
-		text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 1px 1px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+		text-shadow: 0 0 4px #000;
 		position: relative;
-		top: 30%;
+		line-height:24px;
 	}
 		#main .series-box h2 a{
 			text-decoration: none;
 			color: #ecf0f1;
 		}
 		#main .series-box h2 a:hover{
-			color: #000;
-			text-shadow: 2px 0 0 #fff, -2px 0 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff, 1px 1px #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+			text-shadow: 2px 2px 2px #000;
 		}
 		
 /** CALENDAR **/
@@ -472,4 +477,26 @@
 	line-height:40px;
 	font-weight: 700;
 	font-size: 1.3em;
+}
+
+.ion-android-home{ font-size:20px; }
+
+
+
+@media (max-width: 1010px) {
+	#header{ line-height:47px; }
+	#header #search_form_top { position: absolute; right:0px; top:-4px; }
+	#header .separador{ padding:0 10px; }
+	#header a{ padding:0; }
+	#main{ overflow:hidden; }
+	#main .series-box{ width: 100%; }
+	#login-box{ width:100%; }
+	#login-form{ float:none; }
+	#login-form form { margin-right:20px; width:100%; }
+	#login-form form input { width:100%; box-sizing:border-box; height:41px; }
+	#login-form form button { width:100%; }
+	#login-logo { display:none; }
+	#calendar .week_day span{ visibility:hidden; display:block; font-size:1px; }
+	#calendar .week_day span::first-letter{ visibility:visible; font-size:16px; }
+	#previous-month, #next-month{ font-size:1em; }
 }

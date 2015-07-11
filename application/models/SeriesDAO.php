@@ -42,7 +42,7 @@ class Application_Model_SeriesDAO extends Frogg_DAO{
 	}
 	
 	public function getSeries($amount = Frogg_DAO::ALL, $page = 1){
-		$results = $this->search($amount,$page,'WHERE `series_id` = 0','*','ORDER BY `image` DESC');
+		$results = $this->search($amount,$page,'WHERE `series_id` = 0','*','ORDER BY `name` ASC');
 		return $results;
 	}
 	

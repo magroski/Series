@@ -10,7 +10,7 @@ class IndexController extends Project_Controller{
 	
 	public function seriesAction(){
 		$series_dao = new Application_Model_SeriesDAO();
-		$series 	= $series_dao->getSeries(50);
+		$series 	= $series_dao->getSeries(70);
 		
 		$this->view->series = $series;
 	}

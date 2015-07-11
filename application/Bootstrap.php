@@ -24,6 +24,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $view->addHelperPath('../Application/views/helpers/', 'Application_View_Helper');
         $view->description = 'O melhor lugar para acompanhar as suas séries favoritas!';
         $view->headTitle('Seriando')->setSeparator(' | ');
+        $view->headLink()->prependStylesheet(HOST.'css/ionicons.min.css');
         $view->headLink()->prependStylesheet(HOST.'css/jquery.pagewalkthrough.css');
         $view->headLink()->prependStylesheet(HOST.'css/style.css');
         $view->headLink()->prependStylesheet(HOST.'css/flat-ui.css');

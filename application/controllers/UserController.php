@@ -26,8 +26,18 @@ class UserController extends Project_Controller{
 		
 		$series_dao = new Application_Model_SeriesDAO();
 		$calendar 	= $series_dao->myCalendar($series_id,$period);
-		$this->view->period   = $period;
-		$this->view->calendar = $calendar;
+		
+		$episodes_id = array();
+		foreach ($calendar as $day => $episodes){
+			foreach($episodes as $episode){
+				$episodes_id[] = $episode->id;
+			}
+		}
+		$seen_episodes = $watching_dao->filterByEpisodesList($this->session->getUser(),$episodes_id);
+		
+		$this->view->period   		= $period;
+		$this->view->calendar 		= $calendar;
+		$this->view->seen_episodes 	= $seen_episodes;
     }
     
     private function preLoadJson($id){
