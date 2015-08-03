@@ -468,6 +468,9 @@
 		#calendar .calendar-box p{
 			padding: 5px 0 0 5px;
 		}
+			#calendar .calendar-box p span{
+				cursor: pointer;
+			}
 /** SEARCH **/
 #search-title{
 	height: 40px;

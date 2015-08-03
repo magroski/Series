@@ -62,7 +62,7 @@ if($this->period){
 			<?php
 			if(!empty($this->calendar[$list_day])){
 				foreach ($this->calendar[$list_day] as $episode) { ?>
-					<p><?php echo(in_array($episode->id, $this->seen_episodes))?'<span class="fui-eye"></span>':'';?><?php echo $episode->release?></p>
+					<p><?php echo(!in_array($episode->id, $this->seen_episodes))?'<span class="fui-eye" id="_'.$episode->id.'"></span>':'<span class="fui-check" id="_'.$episode->id.'" title="Visto"></span>';?> <?php echo $episode->release?></p>
 				<?php }
 			}
 			?>
@@ -88,3 +88,38 @@ if($this->period){
 	?>
 	</tr>
 </table>
+
+<script type="text/javascript">
+function watchEpisode(id){
+	$.ajax({
+		type : 'POST',
+		url  : '<?php echo $this->url(array(),'ajaxWatchEpisode',true)?>',
+		data : {'id':id}
+	});
+}
+
+function unwatchEpisode(id){
+	$.ajax({
+		type : 'POST',
+		url  : '<?php echo $this->url(array(),'ajaxUnwatchEpisode',true)?>',
+		data : {'id':id}
+	});
+}
+
+$(document).on('click','.fui-check',function(e){
+	var id  = $(this).attr('id');
+	id 		= id.substr(1);
+	$(this).parent().prepend('<span class="fui-eye" id="_'+id+'" title="Marcar como visto"></span>');
+	$(this).remove();
+	unwatchEpisode(id);
+});
+
+
+$(document).on('click','.fui-eye',function(e){
+	var id 	= $(this).attr('id');
+	id 		= id.substr(1);	
+	$(this).parent().prepend('<span class="fui-check" id="_'+id+'" title="Visto"></span>');
+	$(this).remove();
+	watchEpisode(id);
+});
+</script>
